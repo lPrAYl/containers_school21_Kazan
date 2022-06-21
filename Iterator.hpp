@@ -6,284 +6,224 @@
 # include <iterator>
 
 namespace ft {
-	template <class Category, class T, class Distance = std::ptrdiff_t,
-			class Pointer = T*, class Reference = T&>
-	struct mainIterator {
-		typedef T										value_type;
-		typedef Distance								difference_type;
-		typedef Pointer									pointer;
-		typedef Reference								reference;
-		typedef	Category								iterator_category;
-	};
-
 	template <class Iterator>
-	struct Iterator_traits {
-		typedef typename Iterator::value_type			value_type;
-		typedef typename Iterator::difference_type		difference_type;
-		typedef typename Iterator::pointer				pointer;
-		typedef typename Iterator::const_pointer		const_pointer;
-		typedef typename Iterator::reference			reference;
-		typedef typename Iterator::const_reference		const_reference;
-		typedef typename Iterator::iterator_category	iterator_category;
+	struct IteratorTraits {
+		typedef typename Iterator::value_type					value_type;
+		typedef typename Iterator::difference_type				difference_type;
+		typedef typename Iterator::pointer						pointer;
+		typedef typename Iterator::reference					reference;
+		typedef	typename Iterator::iterator_category			iterator_category;
 	};
 
 	template <typename T>
-	struct Iterator_traits<T*> {
-		typedef T										value_type;
-		typedef T*										pointer;
-		typedef const T*								const_pointer;
-		typedef T&										reference;
-		typedef ptrdiff_t								difference_type;
-		typedef std::random_access_iterator_tag			iterator_category;
+	struct IteratorTraits<T*> {
+		typedef T												value_type;
+		typedef T*												pointer;
+		typedef const T*										const_pointer;
+		typedef T&												reference;
+		typedef ptrdiff_t										difference_type;
+		typedef std::random_access_iterator_tag					iterator_category;
 	};
-
 
 	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<< WRAP ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 	template <class Iterator>
 	class WrapIterator {
+		Iterator	_wrap;
 	public:
 		typedef Iterator														iterator_type;
-		typedef typename ft::Iterator_traits<iterator_type>::value_type			value_type;
-		typedef typename ft::Iterator_traits<iterator_type>::pointer			pointer;
-		typedef typename ft::Iterator_traits<iterator_type>::const_pointer		const_pointer;
-		typedef typename ft::Iterator_traits<iterator_type>::reference			reference;
-		typedef typename ft::Iterator_traits<iterator_type>::const_reference	const_reference;
-		typedef typename ft::Iterator_traits<iterator_type>::difference_type	difference_type;
-		typedef typename ft::Iterator_traits<iterator_type>::iterator_category	iterator_category;
-	
-	private:
-		iterator_type	_itype;
-
-	public:
+		typedef typename IteratorTraits<iterator_type>::value_type			value_type;
+		typedef typename IteratorTraits<iterator_type>::pointer				pointer;
+		typedef typename IteratorTraits<iterator_type>::const_pointer		const_pointer;
+		typedef typename IteratorTraits<iterator_type>::reference			reference;
+		typedef typename IteratorTraits<iterator_type>::const_reference		const_reference;
+		typedef typename IteratorTraits<iterator_type>::difference_type		difference_type;
+		typedef typename IteratorTraits<iterator_type>::iterator_category	iterator_category;
 		/**************************** Constructors ****************************/
-		WrapIterator(): _itype(NULL) {};
-		explicit WrapIterator(iterator_type itype): _itype(itype) {};
+		WrapIterator(): _wrap(NULL) {}
+		explicit WrapIterator(iterator_type wrap): _wrap(wrap) {}
+		~WrapIterator() {}
 
-		template <class U>
-		WrapIterator(const WrapIterator<U>& other,
-					typename ft::Enable_if< std::is_convertible<U, iterator_type>::value::type* = 0)
-					: _itype(other,base()) {};
+		template <class W>
+		WrapIterator(const WrapIterator<W>& other,
+					typename ft::enable_if< std::is_convertible<W, iterator_type>::value::type* = 0)
+					: _wrap(other,base()) {}
 
-		WrapIterator& operator=(const WrapIterator& other) { 
-			if (this == &other)
-				return *this;
-			_itype = other.base();
+		WrapIterator& operator=(const WrapIterator& other) {
+			if (this == &other) return *this;
+			_wrap = other.base();
 			return *this;
-		}
+		};
+		Iterator	base() const { return _wrap; }
 
 		/************************ Operator overloading ************************/
-		reference operator*() const						{ return *_itype; }
-		pointer operator->() const						{ return &(*_itype); }
-		WrapIterator& operator++()						{ ++_itype; return *this; }
-		WrapIterator operator++(int)					{ WrapIterator tmp(*this); ++(*this); return tmp; }
-		WrapIterator& operator--()						{ --_itype; return *this; }
-		WrapIterator operator--()						{ WrapIterator tmp(*this); --(*this); return tmp; }
-		WrapIterator operator+(difference_type n) const	{ WrapIterator w(*this); w += n; return w; }
-		WrapIterator& operator+=(difference_type n)		{ _itype += n; return *this; }
-		WrapIterator operator-(difference_type n) const	{ return *this + (-n); }
-		WrapIterator& operator-=(difference_type n)		{ _itype += -n; return *this; }
-		reference operator[](difference_type n) const	{ return _itype[n]; }
-		iterator_type base() const						{ return _itype; }
-
-		template <class Iter1, class Iter2>
-		friend bool operator==(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
-		template <class Iter1, class Iter2>
-		friend bool operator!=(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
-		template <class Iter1, class Iter2>
-		friend bool operator>(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
-		template <class Iter1, class Iter2>
-		friend bool operator>=(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
-		template <class Iter1, class Iter2>
-		friend bool operator<(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
-		template <class Iter1, class Iter2>
-		friend bool operator<=(const WrapIterator<Iter1>&, const WrapIterator<Iter2>&);
+		WrapIterator& operator++()									{ ++_wrap; return *this; }
+		WrapIterator operator++(int)								{ WrapIterator tmp(*this); ++(*this); return tmp; }
+		WrapIterator& operator--()									{ --_wrap; return *this; }
+		WrapIterator operator--()									{ WrapIterator tmp(*this); --(*this); return tmp; }
+		difference_type operator+(WrapIterator const& other) const	{ return _wrap + other._wrap; }
+		difference_type operator-(WrapIterator const& other) const	{ return _wrap - other._wrap; }
+		WrapIterator operator+(difference_type n)					{ return WrapIterator(_wrap + n); }
+		WrapIterator operator-(difference_type n)					{ return WrapIterator(_wrap - n); }
+		WrapIterator& operator+=(difference_type n)					{ _wrap += n; return *this; }
+		WrapIterator& operator-=(difference_type n)					{ _wrap += -n; return *this; }
+		reference operator*() const									{ return *_wrap; }
+		pointer operator->() const									{ return &(*_wrap); }
+		reference operator[](difference_type n) const				{ return _wrap[n]; }
+		bool operator==(WrapIterator const& other) const			{ _wrap == other._wrap; }
+		bool operator!=(WrapIterator const& other) const			{ _wrap != other._wrap; }
+		bool operator<(WrapIterator const& other) const				{ _wrap < other._wrap; }
+		bool operator>(WrapIterator const& other) const				{ _wrap > other._wrap; }
+		bool operator<=(WrapIterator const& other) const			{ _wrap <= other._wrap; }
+		bool operator>=(WrapIterator const& other) const			{ _wrap >= other._wrap; }
 	};
 
-	template <class Iter1, class Iter2>
-	inline bool operator==(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return lhs.base() = rhs.base(); }
-	template <class Iter1, class Iter2>
-	inline bool operator!=(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return !(lhs = rhs); }
-	template <class Iter1, class Iter2>
-	inline bool operator<(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return lhs.base() < rhs.base(); }
-	template <class Iter1, class Iter2>
-	inline bool operator>(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return rhs < lhs; }
-	template <class Iter1, class Iter2>
-	inline bool operator<=(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return !(rhs < lhs); }
-	template <class Iter1, class Iter2>
-	inline bool operator>=(const WrapIterator<Iter1>& lhs, const WrapIterator<Iter2>& rhs) { return !(lhs < rhs); }
-	
-	
-	template <class Iter1, class Iter2>
-	inline typename WrapIterator<Iter1>::difference_type operator-(const WrapIterator<Iter1>& x, const WrapIterator<Iter2>& y)
-	{ return x.base() - y.base(); }
-	template <class Iter>
-	WrapIterator<Iter> operator+(typename WrapIterator<Iter>::difference_type n, WrapIterator<Iter> x)
-	{ x += n; return x; }
-
-
 	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< NODE ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-	template <class Iterator, class V>
+	template <class Iterator, class Pair>
 	class NodeIterator {
-	public:
-		typedef Iterator								iterator_type;
-		typedef V										value_type;
-		typedef ptrdiff_t								difference_type;
-		typedef V&										reference;
-		typedef const V&								const_reference;
-		typedef V*										pointer;
-		typedef const V*								const_pointer;
-		typedef std::bidirectional_iterator_tag			itetator_category;
-
 	private:
-		iterator_type	_itype;
+		Iterator	_node;
+		/*********************** Next and Previous **********************/
+		void	next() {
+			if (_node->nil && _node->begin != _node) {
+				_node = _node->begin;
+			} else if (!_node->right->nil) {
+				_node = _node->right;
+				while (!_node->left->nil)
+					_node = node->left;
+			} else {
+				Iterator tmp = _node;
+				Iterator reverse = _node;
+				if (!(_node->parent)) {
+					_node = reverse->right;
+					return ;
+				}
+				_node = _node->parent;
+				while (_node->left != tmp) {_
+					if (!(_node->parent)) {
+						_node = reverse->right;
+						break ;
+					}
+					tmp =_ node;
+					_node = node->parent;
+				}
+			}
+		}
 
+		void	prev() {
+			if (_node->nil) {
+				_node = node->parent;
+			} else if (!_node->left->nil) {
+				_node =_ node->left;
+				while (!_node->right->nil)
+					_node = node->right;
+			} else {
+				Iterator tmp = _node;
+				_node = n_ode->parent;
+				while (_node->right != tmp) {
+					tmp = _node;
+					if (!(_node->parent)) {
+						_node = tmp->left - 1;
+						break ;
+					}
+					_node = _node->parent;
+				}
+			}
+		}
 	public:
-		iterator_type base() const						{ return _itype; }
-		/**************************** Constructors ****************************/
-		NodeIterator(): _itype(NULL) {}
-		explicit NodeIterator(iterator_type itype): _itype(itype) {}
-		NodeIterator(const NodeIterator& other): _itype(other.base()) {}
+		typedef Iterator							iterator_type;
+		typedef Pair								value_type;
+		typedef ptrdiff_t							difference_type;
+		typedef Pair&								reference;
+		typedef const Pair&							const_reference;
+		typedef Pair*								pointer;
+		typedef const Pair*							const_pointer;
+		typedef std::bidirectional_iterator_tag		iterator_category;
 
-		template <class U>
-		NodeIterator(const NodeIterator<U, V>& other,
-					typename ft::Enable_if<std::is_convertible<U, Iterator>::type* = 0): _itype(other.base()) {}
+		iterator_type base() const					{ return _node; }
+		/**************************** Constructors ****************************/
+		NodeIterator(): _node(NULL) {}
+		explicit NodeIterator(Iterator node): _node(node) {}
+		~NodeIterator() {}
+
+		template <class N, class Z>
+		NodeIterator(NodeIterator<N, Z> const& other,
+					typename ft::enable_if<std::is_convertible<N, Iterator>::value>::type* = 0): _node(other.base()) {}
 
 		NodeIterator& operator=(const NodeIterator& other) {
 			if (this == &other)
 				return *this;
-			_itype = other.base();
+			_node = other.base();
 			return *this;
 		}
 
-	private:
-		/*********************** Increment and Decrement **********************/
-		void	increment(iterator_type& node) {
-			iterator_type	tmp;
-			iterator_type	current;
-
-			if (node->nil && node->begin != node) {
-				node = node->begin;
-			} else if (!node->right->nil) {
-				node = node->right;
-				while (!node->left->nil)
-					node = node->left;
-			} else {
-				tmp = node;
-				current = node;
-				if (!(node->parent)) {
-					node = current->right;
-					return ;
-				}
-				node = node->parent;
-				while (node->left != tmp) {
-					if (!(node->parent)) {
-						node = current->right;
-						return ;
-					}
-					tmp = node;
-					node = node->parent;
-				}
-			}
-		}
-
-		void	decrement(iterator_type& node) {
-			iterator_type	tmp;
-
-			if (node->nil) {
-				node = node->parent;
-			} else if (!node->left->nil) {
-				node = node->left;
-				while (!node->right->nil)
-					node = node->right;
-			} else {
-				tmp = node;
-				node = node->parent;
-				while ( (node->right != tmp)) {
-					tmp = node;
-					if (!(node->parent)) {
-						node = tmp->left - 1;
-						break ;
-					}
-					node = node->parent;
-				}
-			}
-		}
-	
-	public:
 		/************************ Operator overloading ************************/
-		reference operator*() { return *(_itype->data); }
-		const_reference operator*() const { return *(_itype->data); }
-		pointer operator->() { return _itype->data; }
-		const_pointer operator->() const { return _itype->data; }
-		NodeIterator& operator++() { increment(_itype); return *this; }
-		NodeIterator operator++(int) { NodeIterator tmp(*this); increment(_itype); return tmp; }
-		NodeIterator& operator--() { decrement(_itype); return *this; }
-		NodeIterator operator--(int) { NodeIterator tmp(*this); decrement(_itype); return tmp; }
-
-		template <class Iter1, class Iter2, class V1>
-		friend bool operator==(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y);
-		template <class Iter1, class Iter2, class V1>
-		friend bool operator!=(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y);
+		NodeIterator	operator++(int)									{ NodeIterator tmp(*this); next(); return tmp; }
+		NodeIterator	&operator++() 									{ next(); return *this; }
+		NodeIterator	operator--(int)									{ NodeIterator tmp(*this); prev(); return tmp; }
+		NodeIterator	&operator--() 									{ prev(); return *this; }
+		reference 		operator*()		 								{ return *(_node->pair); }
+		const_reference operator*() const								{ return *(_node->pair); }
+		pointer 		operator->()									{ return _node->pair; }
+		const_pointer 	operator->() const								{ return _node->pair; }
+		bool			operator==(NodeIterator const &other) const 	{ return _node == other._node; }
+		bool			operator!=(NodeIterator const &other) const 	{ return _node != other._node; }
+		bool 			operator>(NodeIterator const &other) const 		{ return _node->pair > other._node->pair; }
+		bool 			operator<(NodeIterator const &other) const 		{ return other._node->pair > _node->pair; }
+		bool 			operator<=(NodeIterator const &other) const 	{ return _node->pair <= other._node->pair; }
+		bool 			operator>=(NodeIterator const &other) const 	{ return _node->pair >= other._node->pair; }
 	};
-
-	template <class Iter1, class Iter2, class V1>
-	bool operator==(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y) { return x.base() == y.base(); }
-	template <class Iter1, class Iter2, class V1>
-	bool operator1=(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y) { return !(x == y); }
-
-
+	
 	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<< REVERSE ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>*/
 	template <class Iterator>
-	class ReverseIterator: public mainIterator< typename Iterator_traits<Iterator>::iterator_category,
-												typename Iterator_traits<Iterator>::value_type,
-												typename Iterator_traits<Iterator>::difference_type,
-												typename Iterator_traits<Iterator>::reference,
-												typename Iterator_traits<Iterator>::pointer > {
-	protected:
-		Iterator	_current;
+	class ReverseIterator {
+		Iterator	_reverse;
 
 	public:
 		typedef Iterator												iterator_type;
-		typedef typename Iterator_traits<Iterator>::difference_type		difference_type;
-		typedef typename Iterator_traits<Iterator>::reference			reference;
-		typedef typename Iterator_traits<Iterator>::const_reference		const_reference;
-		typedef typename Iterator_traits<Iterator>::pointer				pointer;
-		typedef typename Iterator_traits<Iterator>::const_pointer		const_pointer;
+		typedef typename iterator_traits<Iterator>::difference_type		difference_type;
+		typedef typename iterator_traits<Iterator>::value_type			value_type;
+		typedef typename iterator_traits<Iterator>::reference			reference;
+		typedef typename iterator_traits<Iterator>::const_reference		const_reference;
+		typedef typename iterator_traits<Iterator>::pointer				pointer;
+		typedef typename iterator_traits<Iterator>::const_pointer		const_pointer;
+		typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
 
+		Iterator base() const { return _reverse; }
 		/**************************** Constructors ****************************/
-		ReverseIterator(): _current() {};
-		explicit ReverseIterator(Iterator current): _current(current) {};
+		ReverseIterator(): _reverse() {}
+		explicit ReverseIterator(Iterator reverse): _reverse(reverse) {}
+		~ReverseIterator() {}
 
-		template <class U>
-		ReverseIterator(const ReverseIterator<U>& other): _current(other.base()) {};
+		template <class R> 
+		ReverseIterator(const ReverseIterator<R>& other,
+				typename ft::enable_if<std::is_convertible<R, Iterator>::value>::type* = 0): _reverse(other.base()) {}
 
-		template <class U>
-		ReverseIterator& operator=(const ReverseIterator<U>& other) {
+		ReverseIterator& operator=(const ReverseIterator& other) {
 			if (this == &other)
 				return *this;
-			_curent = other.base();
+			_reverse = other.base();
 			return *this;
 		}
 
-		Iterator base() const { return _current; }
-
 		/************************ Operator overloading ************************/
-		reference operator*() const								{ Iterator tmp = _current; return *tmp; }
-		//const_reference operator*() const						{ Iterator tmp = _current; return *tmp; }
-		pointer operator->() const								{ return &(operator*()); }
-		// const_pointer operator->() const						{ return &(operator*()); }
-		ReverseIterator& operator++()							{ --_current; return *this; }
-		ReverseIterator operator++(int)							{ ReverseIterator tmp(*this); _current--; return tmp; }
-		ReverseIterator& operator--()							{ ++_current; return *this; }
-		ReverseIterator operator--(int)							{ ReverseIterator tmo(*this); _currents++; return tmp; }
-		ReverseIterator operator+(difference_type n) const		{ return ReverseIterator(_current - n); }
-		ReverseIterator& operator+=(difference_type n)			{ _current -= n; return *this; }
-		ReverseIterator operator-(difference_type n) const		{ return ReverseIterator(_current + n); }
-		ReverseIterator& operator-=(difference_type n)			{ _current += n; return *this; }
+		reference			operator*()									{ return *_reverse; }
+		pointer				operator->()								{ return &(operator*()); }
+		reverse_iterator&	operator++()								{ --_reverse; return *this; }
+		reverse_iterator	operator++(int)								{ ReverseIterator tmp(*this); _reverse--; return tmp; }
+		reverse_iterator&	operator--()								{ ++_reverse; return *this; }
+		reverse_iterator	operator--(int)								{ ReverseIterator tmp(*this); _reverse++; return tmp; }
+		reverse_iterator	operator+(difference_type n) const			{ return ReverseIterator(_reverse - n); }
+		reverse_iterator&	operator+=(difference_type n)				{ _reverse -= n; return *this; }
+		reverse_iterator	operator-(difference_type n) const			{ return ReverseIterator(_reverse + n); }
+		reverse_iterator&	operator-=(difference_type n)				{ _reverse += n; return *this; }
+		reference		operator[](difference_type n) const				{ return *(*this + n); }
+		bool			operator==(reverse_iterator const &obj) const	{ return _reverse == obj._reverse; };
+		bool			operator!=(reverse_iterator const &obj) const	{ return _reverse != obj._reverse; };
+		bool			operator<(reverse_iterator const &obj) const	{ return _reverse < obj._reverse; };
+		bool			operator>(reverse_iterator const &obj) const	{ return _reverse > obj._reverse; };
+		bool			operator<=(reverse_iterator const &obj) const	{ return _reverse <= obj._reverse; };
+		bool			operator>=(reverse_iterator const &obj) const	{ return _reverse >= obj._reverse; };
 	};
-
-	template <class Iter1, class Iter2>
-	inline bool operator==(const ReverseIterator<Iter1>& x, const R)
 }
 
 #endif
