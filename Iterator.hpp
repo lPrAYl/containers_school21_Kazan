@@ -37,6 +37,7 @@ namespace ft {
 		typedef std::random_access_iterator_tag			iterator_category;
 	};
 
+
 	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<< WRAP ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 	template <class Iterator>
 	class WrapIterator {
@@ -118,6 +119,7 @@ namespace ft {
 	template <class Iter>
 	WrapIterator<Iter> operator+(typename WrapIterator<Iter>::difference_type n, WrapIterator<Iter> x)
 	{ x += n; return x; }
+
 
 	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< NODE ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 	template <class Iterator, class V>
@@ -228,6 +230,60 @@ namespace ft {
 	bool operator==(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y) { return x.base() == y.base(); }
 	template <class Iter1, class Iter2, class V1>
 	bool operator1=(const NodeIterator<Iter1, V1>& x, const NodeIterator<Iter2, V1>& y) { return !(x == y); }
+
+
+	/*<<<<<<<<<<<<<<<<<<<<<<<<<<<< REVERSE ITERATOR >>>>>>>>>>>>>>>>>>>>>>>>>>*/
+	template <class Iterator>
+	class ReverseIterator: public mainIterator< typename Iterator_traits<Iterator>::iterator_category,
+												typename Iterator_traits<Iterator>::value_type,
+												typename Iterator_traits<Iterator>::difference_type,
+												typename Iterator_traits<Iterator>::reference,
+												typename Iterator_traits<Iterator>::pointer > {
+	protected:
+		Iterator	_current;
+
+	public:
+		typedef Iterator												iterator_type;
+		typedef typename Iterator_traits<Iterator>::difference_type		difference_type;
+		typedef typename Iterator_traits<Iterator>::reference			reference;
+		typedef typename Iterator_traits<Iterator>::const_reference		const_reference;
+		typedef typename Iterator_traits<Iterator>::pointer				pointer;
+		typedef typename Iterator_traits<Iterator>::const_pointer		const_pointer;
+
+		/**************************** Constructors ****************************/
+		ReverseIterator(): _current() {};
+		explicit ReverseIterator(Iterator current): _current(current) {};
+
+		template <class U>
+		ReverseIterator(const ReverseIterator<U>& other): _current(other.base()) {};
+
+		template <class U>
+		ReverseIterator& operator=(const ReverseIterator<U>& other) {
+			if (this == &other)
+				return *this;
+			_curent = other.base();
+			return *this;
+		}
+
+		Iterator base() const { return _current; }
+
+		/************************ Operator overloading ************************/
+		reference operator*() const								{ Iterator tmp = _current; return *tmp; }
+		//const_reference operator*() const						{ Iterator tmp = _current; return *tmp; }
+		pointer operator->() const								{ return &(operator*()); }
+		// const_pointer operator->() const						{ return &(operator*()); }
+		ReverseIterator& operator++()							{ --_current; return *this; }
+		ReverseIterator operator++(int)							{ ReverseIterator tmp(*this); _current--; return tmp; }
+		ReverseIterator& operator--()							{ ++_current; return *this; }
+		ReverseIterator operator--(int)							{ ReverseIterator tmo(*this); _currents++; return tmp; }
+		ReverseIterator operator+(difference_type n) const		{ return ReverseIterator(_current - n); }
+		ReverseIterator& operator+=(difference_type n)			{ _current -= n; return *this; }
+		ReverseIterator operator-(difference_type n) const		{ return ReverseIterator(_current + n); }
+		ReverseIterator& operator-=(difference_type n)			{ _current += n; return *this; }
+	};
+
+	template <class Iter1, class Iter2>
+	inline bool operator==(const ReverseIterator<Iter1>& x, const R)
 }
 
 #endif
