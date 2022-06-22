@@ -33,10 +33,10 @@ namespace ft {
 		explicit Vector(const A& alloc = A()): _buffer(0), _capacity(0), _size(0), _allocator(alloc) {}
 
 		Vector(size_type count, const_reference value = value_type(), const A& alloc = A()) {
-			if (count < 0)  trow std::out_of_range("Vector");
+			if (count < 0)  throw std::out_of_range("Vector");
 			_allocator = alloc;
 			_capacity = _size = count;
-			buffer = _allocator.allocate(_capacity);
+			_buffer = _allocator.allocate(_capacity);
 			for (size_t i = 0; i < _size; ++i)
 				_buffer[i] = value;
 		}
@@ -44,7 +44,7 @@ namespace ft {
 		template <class Iterator>
 		Vector(Iterator left, Iterator right, const A& alloc = A(),
 				typename ft::enable_if<!ft::is_integral<Iterator>::value, void>::type* = 0): _capacity(0), _size(0), _allocator(alloc) {
-			buffer = _allocator.allocate(_capacity);
+			_buffer = _allocator.allocate(_capacity);
 			this->assign(left, right);
 		}
 		
@@ -76,12 +76,12 @@ namespace ft {
 			if (count < 0) throw std::out_of_range("Vector");
 			this->clear();
 			this->reserve(count);
-			fot (size_t i = 0; i < count; ++i)
+			for (size_t i = 0; i < count; ++i, _size++)
 				_buffer[i] = value;
 		}
 
 		template <class Iterator>
-		typename ft::enable_if<!ft::is_integral<Iterator>::value, void>::type;
+		typename ft::enable_if<!ft::is_integral<Iterator>::value, void>::type
 		assign(Iterator left, Iterator right) {
 			int range_size = right - left;
 			if (range_size < 0) throw std::length_error("Vector");
@@ -142,7 +142,7 @@ namespace ft {
 		}
 
 		template <class Iterator>
-		typename ft::enable_if<!ft::is_integral<Iterator>::value, void>::type;
+		typename ft::enable_if<!ft::is_integral<Iterator>::value, void>::type
 		insert(iterator pos, Iterator left, Iterator right) {
 			size_t range_size = right - left;
 			if (!validate_iterator_values(left, right, range_size)) throw std::exception();
@@ -165,8 +165,8 @@ namespace ft {
 						_buffer[i] = *--right;
 				}
 				return ;
+				_buffer[i] = _buffer[i - range_size];
 			}
-			_buffer[i] = _buffer[i - range_size];
 		}
 
 		iterator	erase(iterator pos) {
@@ -275,15 +275,15 @@ namespace ft {
 			return false;
 		}
 
-		/*************************** Members Methods ***************************/
+		/*************************** Members Methods **************************/
 		reference at( size_type pos ) {
 			if (pos >= _size) throw std::out_of_range("Vector");
-			return buffer[pos];
+			return _buffer[pos];
 		}
 
 		const_reference at( size_type pos ) const {
 			if (pos >= _size) throw std::out_of_range("Vector");
-			return buffer[pos];
+			return _buffer[pos];
 		}
 
 		reference				operator[]( size_type pos )			{ return _buffer[pos]; }
@@ -309,10 +309,10 @@ namespace ft {
 																		std::numeric_limits<size_type>::max() / sizeof(value_type))); }
 	private:
 		template<class Iterator>
-		typename ft::enable_if<!ft::is_integral<Iterator>::value, bool>::type;
+		typename ft::enable_if<!ft::is_integral<Iterator>::value, bool>::type
 		validate_iterator_values(Iterator first, Iterator last, size_t range) {
 			pointer reserved_buffer;
-			reserved_buffer = allocator.allocate(range);
+			reserved_buffer = _allocator.allocate(range);
 			bool result = true;
 			size_t i = 0;
 
@@ -320,7 +320,7 @@ namespace ft {
 				try { reserved_buffer[i] = *first; }
 				catch (...) { result = false; break; }
 			}
-			allocator.deallocate(reserved_buffer, range);
+			_allocator.deallocate(reserved_buffer, range);
 			return result;
 		}
 	};
