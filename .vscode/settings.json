@@ -119,6 +119,11 @@
 		"ranges": "cpp",
 		"stop_token": "cpp",
 		"__functional_03": "cpp",
-		"__functional_base_03": "cpp"
+		"__functional_base_03": "cpp",
+		"__tree": "cpp",
+		"filesystem": "cpp",
+		"map": "cpp",
+		"set": "cpp",
+		"stack": "cpp"
 	}
     }

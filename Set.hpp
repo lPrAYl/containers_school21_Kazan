@@ -21,10 +21,10 @@ namespace ft {
 		typedef const value_type&													const_reference;
 		typedef typename allocator_type::pointer									pointer;
 		typedef typename allocator_type::const_pointer								const_pointer;
-		typedef ft::node_iterator<Node_<value_type>*, value_type>					iterator;
-		typedef ft::node_iterator<const Node_<value_type>*, value_type>				const_iterator;
-		typedef ft::reverse_iterator<iterator>										reverse_iterator;
-		typedef ft::reverse_iterator<const_iterator>								const_reverse_iterator;
+		typedef ft::NodeIterator<Node_<value_type>*, value_type>					iterator;
+		typedef ft::NodeIterator<const Node_<value_type>*, value_type>				const_iterator;
+		typedef ft::ReverseIterator<iterator>										reverse_iterator;
+		typedef ft::ReverseIterator<const_iterator>									const_reverse_iterator;
 		typedef typename allocator_type::template rebind<Node_<value_type> >::other	allocator_rebind_node;
 		typedef typename allocator_type::template rebind<Tree<value_type> >::other	allocator_rebind_tree;
 	

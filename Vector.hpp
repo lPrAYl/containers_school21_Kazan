@@ -4,6 +4,7 @@
 
 # include <memory>
 # include "Iterator.hpp"
+#include <stdexcept>
 
 namespace ft {
 	template < class T, class A = std::allocator<T> >
@@ -125,11 +126,11 @@ namespace ft {
 				}
 			}
 			for (int i = _size; i >= 0; --i) {
-				if (i == index) {
-					for ( ; count > 0; --count) {
+				if (i == index + count - 1) {
+					for ( ; count > 0; --count, --i) {
 						_buffer[i] = value;
-						return ;
 					}
+					return ;
 				}
 				_buffer[i] = _buffer[i - count];
 			}
@@ -159,12 +160,12 @@ namespace ft {
 					_size++;
 				}
 			}
-			for (int i = _size - 1; i >= 0; --i) {
+			for (int i = _size; i >= 0; --i) {
 				if (i == right_index) {
 					for ( ; range_size > 0; --range_size, --i)
 						_buffer[i] = *--right;
+					return ;
 				}
-				return ;
 				_buffer[i] = _buffer[i - range_size];
 			}
 		}
